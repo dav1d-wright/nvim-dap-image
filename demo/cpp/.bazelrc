@@ -1,0 +1,5 @@
+build --enable_bzlmod
+build -c dbg
+build --copt=-O0
+build --copt=-g
+build --strip=never
