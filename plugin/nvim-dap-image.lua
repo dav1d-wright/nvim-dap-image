@@ -1,0 +1,2 @@
+-- nvim-dap-image: View images from debug sessions in Neovim
+-- Loaded by lazy.nvim; setup() called from user config

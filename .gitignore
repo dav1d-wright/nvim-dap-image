@@ -1,0 +1,14 @@
+# Python
+demo/python/.venv/
+__pycache__/
+*.pyc
+
+# Bazel
+bazel-*
+MODULE.bazel.lock
+
+# Editor
+.vscode/
+
+# Temp
+*.tmp
