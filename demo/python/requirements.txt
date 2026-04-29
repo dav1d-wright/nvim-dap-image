@@ -1,0 +1,5 @@
+opencv-python>=4.0
+Pillow>=9.0
+numpy>=1.20
+matplotlib>=3.5
+debugpy>=1.6
