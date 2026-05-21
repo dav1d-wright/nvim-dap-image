@@ -1,7 +1,7 @@
 local M = {}
 
 M.defaults = {
-  tmp_dir = vim.fn.stdpath("cache") .. "/nvim-dap-image",
+  tmp_dir = vim.uv.os_tmpdir() .. "/nvim-dap-image",
 
   window = {
     width_pct = 0.6,
