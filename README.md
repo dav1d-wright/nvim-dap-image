@@ -181,13 +181,13 @@ Extraction works differently for Python and C++ because of a fundamental constra
 
 These projects solve similar problems in other editors and informed the design:
 
-- **[View Image for Python Debugging](https://github.com/elazarcoh/simply-view-image-for-python-debugging)** (VS Code) - Uses DAP evaluate to call `cv2.imwrite()` in the debuggee, reads temp file back for webview display. Written in Rust + TypeScript. The tempfile approach used here mirrors this strategy.
+- **[View Image for Python Debugging](https://github.com/elazarcoh/simply-view-image-for-python-debugging)** (VS Code) - Uses DAP evaluate to inject Python code into the debuggee that serializes image data and streams it over a localhost TCP socket to the extension ([socket_client.py](https://github.com/elazarcoh/simply-view-image-for-python-debugging/blob/b5790b96d5a22c73dde14c44b8f358bc6bbe2055/src/python/socket_client.py#L541-L582)). Written in Rust + TypeScript.
 
-- **[Debug Visualizer](https://github.com/hediet/vscode-debug-visualizer)** (VS Code, hediet) - General-purpose debug data visualizer. Injects data extractors into the debuggee, uses JSON for structured data exchange. More complex architecture than needed for images alone.
+- **[Debug Visualizer](https://github.com/hediet/vscode-debug-visualizer)** (VS Code, hediet) - General-purpose debug data visualizer. Injects data extractors into the debuggee, uses JSON for structured data exchange ([DataExtractionResult.ts](https://github.com/hediet/vscode-debug-visualizer/blob/96c26e5388eda9ed81a488f1d95a26a9af166214/data-extraction/src/DataExtractionResult.ts#L7-L12)). More complex architecture than needed for images alone.
 
-- **[OpenImageDebugger](https://github.com/OpenImageDebugger/OpenImageDebugger)** (GDB/LLDB) - Reads raw pixel memory via GDB/LLDB Python APIs (`val["data"]`, `ReadMemory`). Custom type parser interface. The C++ extraction approach in this plugin is inspired by this strategy.
+- **[OpenImageDebugger](https://github.com/OpenImageDebugger/OpenImageDebugger)** (GDB/LLDB) - Reads raw pixel memory via GDB/LLDB Python APIs (`inferior.read_memory()` on GDB, `ReadMemory` on LLDB) ([gdbbridge.py](https://github.com/OpenImageDebugger/OpenImageDebugger/blob/8e0ca656471161f74b3c143fb83371da31b02d57/resources/oidscripts/debuggers/gdbbridge.py#L85-L88)). Custom type parser interface. The C++ extraction approach in this plugin is inspired by this strategy.
 
-- **[CodeLLDB Data Visualization](https://github.com/vadimcn/codelldb/wiki/Data-visualization)** - Uses LLDB's `process.ReadMemory()` + Python encoding + HTML data URIs. Purely memory-based, no disk I/O. Efficient but tightly coupled to the CodeLLDB adapter.
+- **[CodeLLDB Data Visualization](https://github.com/vadimcn/codelldb/wiki/Data-visualization/6e531b456750da84d5dfd6ad3d5d54f2515f73bd)** - Uses LLDB's `process.ReadMemory()` + Python encoding + HTML data URIs. Purely memory-based, no disk I/O. Efficient but tightly coupled to the CodeLLDB adapter.
 
 - **CLion OpenCV Image Viewer** (JetBrains, built-in since 2024.3) - Native debugger integration, hooks into the Variables panel. Proprietary implementation.
 
@@ -200,6 +200,10 @@ make test
 ```
 
 Requires `plenary.nvim`, `nvim-dap`, and `image.nvim` to be installed (standard lazy.nvim paths).
+
+## Contributing
+
+Contributions are more than welcome! Feel free to open issues for discussion and filing PRs.
 
 ## License
 
