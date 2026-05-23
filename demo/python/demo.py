@@ -73,6 +73,20 @@ def create_4k_image():
     return img_4k
 
 
+def create_cropped_image():
+    """Create an image with text then return a crop that cuts through the text mid-word.
+
+    The slice has a larger stride than its width (step > cols * channels),
+    which tests that the extractor correctly handles non-contiguous arrays.
+    """
+    base = np.zeros((480, 640, 3), dtype=np.uint8)
+    cv2.putText(base, "cropped image", (50, 260),
+                cv2.FONT_HERSHEY_SIMPLEX, 2.0, (100, 200, 255), 4)
+    # Crop so "image" is cut off mid-word; step stays at 640*3
+    cropped = base[190:310, 0:430]
+    return cropped
+
+
 def main():
     cv_img = create_opencv_image()
     pil_img = create_pil_image()
@@ -80,6 +94,7 @@ def main():
     fig = create_matplotlib_figure()
     large_img = create_large_image()
     img_4k = create_4k_image()
+    cropped = create_cropped_image()
 
     not_an_image = 42
 

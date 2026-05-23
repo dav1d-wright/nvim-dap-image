@@ -47,6 +47,20 @@ cv::Mat create_large_image() {
     return large;
 }
 
+/// Create an image with text then return a cropped submatrix that cuts through
+/// the text mid-word. The submatrix has step[0] == parent's row stride (640*3),
+/// while cols == 430, so step > cols * channels. Tests non-contiguous memory.
+cv::Mat create_cropped_image() {
+    cv::Mat base = cv::Mat::zeros(480, 640, CV_8UC3);
+    cv::putText(base, "cropped image", cv::Point(50, 260),
+                cv::FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(100, 200, 255), 4);
+    // Crop so "image" is cut off mid-word.
+    // The returned submatrix has step[0] == 640*3 (parent stride) while cols == 430,
+    // so step > cols * channels -- tests non-contiguous memory handling.
+    cv::Mat cropped = base(cv::Rect(0, 190, 430, 120));
+    return cropped;
+}
+
 /// Create a 3840x2160 BGR image (~24MB raw).
 cv::Mat create_4k_image() {
     cv::Mat img_4k = cv::Mat::zeros(2160, 3840, CV_8UC3);
@@ -63,6 +77,7 @@ int main() {
     cv::Mat bgra = create_bgra_image();
     cv::Mat large_img = create_large_image();
     cv::Mat img_4k = create_4k_image();
+    cv::Mat cropped = create_cropped_image();
 
     int not_an_image = 42;
 
