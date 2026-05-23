@@ -1,5 +1,5 @@
 --- Automated integration test for nvim-dap-image C++ extractors.
---- Launches a real codelldb session, hits a breakpoint, and verifies
+--- Launches a real debug session, hits a breakpoint, and verifies
 --- that the cv::Mat extractor can detect and extract image data.
 ---
 --- Prerequisites:
@@ -13,12 +13,15 @@
 local dap = require("dap")
 require("nvim-dap-image").setup()
 
+-- Extend adapter connection timeout for CI environments
+dap.defaults.fallback.initialize_timeout_sec = 30
+
 -- Safety timeout
 vim.defer_fn(function()
   io.write("TIMEOUT: integration test took too long\n")
   io.flush()
   vim.cmd("cq")
-end, 30000)
+end, 90000)
 
 local demo_file = vim.fn.fnamemodify("demo.cpp", ":p")
 local demo_dir = vim.fn.fnamemodify(".", ":p")
@@ -26,7 +29,6 @@ local demo_dir = vim.fn.fnamemodify(".", ":p")
 -- Find the built binary
 local binary = vim.fn.glob(demo_dir .. "bazel-bin/demo")
 if binary == "" then
-  -- Try common bazel-bin paths
   binary = vim.fn.glob(demo_dir .. "bazel-out/*/bin/demo")
   if binary == "" then
     io.write("SKIP: Binary not built. Run 'bazel build //:demo' first.\n"); io.flush()
@@ -46,7 +48,6 @@ if vim.fn.filereadable(codelldb_path) == 0 then
   end
 end
 
--- Configure codelldb adapter
 dap.adapters.codelldb = {
   type = "server",
   port = "${port}",
@@ -122,7 +123,6 @@ if not bp_line then
 end
 
 vim.cmd("edit " .. demo_file)
-
 vim.api.nvim_win_set_cursor(0, { bp_line, 0 })
 dap.toggle_breakpoint()
 
@@ -152,7 +152,6 @@ dap.listeners.after.event_stopped["integration_test"] = function()
   end, 200)
 end
 
--- Launch directly to avoid config picker
 dap.run({
   type = "codelldb",
   request = "launch",

@@ -3,3 +3,6 @@ build -c dbg
 build --copt=-O0
 build --copt=-g
 build --strip=never
+# Remap the Bazel sandbox CWD (/proc/self/cwd on Linux, execroot on macOS) to "."
+# so codelldb can resolve source paths relative to the launch cwd without a sourceMap.
+build --copt=-fdebug-prefix-map=/proc/self/cwd=.

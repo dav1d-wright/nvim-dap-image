@@ -1,0 +1,67 @@
+stages:
+  - test
+
+variables:
+  DEBIAN_FRONTEND: noninteractive
+  NVIM_URL: https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+
+test:unit:
+  stage: test
+  image: ubuntu:24.04
+  before_script:
+    - apt-get update -q
+    - apt-get install -y -q --no-install-recommends curl git ca-certificates make
+    - curl -fsSL "$NVIM_URL" | tar -xz -C /usr/local --strip-components=1
+    - mkdir -p ~/.local/share/nvim/lazy
+    - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
+    - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
+    - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+  script:
+    - make test
+
+test:python:
+  stage: test
+  image: ubuntu:24.04
+  before_script:
+    - apt-get update -q
+    - apt-get install -y -q --no-install-recommends
+        curl git ca-certificates make python3 python3-venv libgl1 libglib2.0-0
+    - curl -fsSL "$NVIM_URL" | tar -xz -C /usr/local --strip-components=1
+    - mkdir -p ~/.local/share/nvim/lazy
+    - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
+    - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
+    - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+  script:
+    - make test-python
+
+test:cpp:
+  stage: test
+  image: ubuntu:24.04
+  cache:
+    key:
+      files:
+        - demo/cpp/MODULE.bazel
+        - demo/cpp/.bazelrc
+    paths:
+      - .bazel-cache
+  before_script:
+    - apt-get update -q
+    - apt-get install -y -q --no-install-recommends
+        curl git ca-certificates make build-essential unzip python3
+    - curl -fsSL "$NVIM_URL" | tar -xz -C /usr/local --strip-components=1
+    - mkdir -p ~/.local/share/nvim/lazy
+    - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
+    - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
+    - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+    # Bazelisk as 'bazel'; routes output into the cached dir
+    - curl -fsSL https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
+        -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel
+    - echo "startup --output_user_root=$CI_PROJECT_DIR/.bazel-cache" >> ~/.bazelrc
+    # codelldb at the Mason path the integration test expects
+    - mkdir -p ~/.local/share/nvim/mason/packages/codelldb
+    - curl -fsSL https://github.com/vadimcn/codelldb/releases/latest/download/codelldb-linux-x64.vsix
+        -o /tmp/codelldb.vsix
+    - unzip -q /tmp/codelldb.vsix -d ~/.local/share/nvim/mason/packages/codelldb
+    - chmod +x ~/.local/share/nvim/mason/packages/codelldb/extension/adapter/codelldb
+  script:
+    - make test-cpp
