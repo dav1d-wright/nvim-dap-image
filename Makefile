@@ -1,6 +1,9 @@
 PLENARY_DIR := $(HOME)/.local/share/nvim/lazy/plenary.nvim
 DAP_DIR := $(HOME)/.local/share/nvim/lazy/nvim-dap
 IMAGE_DIR := $(HOME)/.local/share/nvim/lazy/image.nvim
+# Override to test against a development checkout: make test IMAGE_VIEW_DIR=~/projects/image-view.nvim
+IMAGE_VIEW_DIR ?= $(HOME)/.local/share/nvim/lazy/image-view.nvim
+export IMAGE_VIEW_DIR
 
 .PHONY: test test-python test-cpp demo-setup-python demo-setup-cpp
 
@@ -11,6 +14,7 @@ test:
 		--cmd "set rtp+=$(PLENARY_DIR)" \
 		--cmd "set rtp+=$(DAP_DIR)" \
 		--cmd "set rtp+=$(IMAGE_DIR)" \
+		--cmd "set rtp+=$(IMAGE_VIEW_DIR)" \
 		--cmd "set rtp+=." \
 		-c "lua require('plenary.test_harness').test_directory('tests', { minimal_init = 'tests/minimal_init.lua' })"
 

@@ -9,7 +9,7 @@ Works with codelldb and cppdbg (C++) and debugpy (Python).
 ## Requirements
 
 - [nvim-dap](https://github.com/mfussenegger/nvim-dap) - Debug Adapter Protocol client
-- [image.nvim](https://github.com/3rd/image.nvim) - Terminal image rendering (Kitty graphics protocol, sixel, or ueberzug)
+- [image-view.nvim](https://gitlab.com/david_wright/image-view.nvim) - the floating viewer (zoom, pan, close). Pulls in [image.nvim](https://github.com/3rd/image.nvim) for terminal rendering.
 - A terminal that supports image display (Kitty, Ghostty, WezTerm, etc.)
 
 ### Debug Adapter Dependencies
@@ -38,7 +38,10 @@ The plugin works by evaluating expressions in the debuggee process to write imag
 {
   url = "https://gitlab.com/david_wright/nvim-dap-image",
   -- GitHub mirror: "dav1d-wright/nvim-dap-image"
-  dependencies = { "mfussenegger/nvim-dap", "3rd/image.nvim" },
+  dependencies = {
+    "mfussenegger/nvim-dap",
+    { url = "https://gitlab.com/david_wright/image-view.nvim" },
+  },
   config = function()
     require("nvim-dap-image").setup()
   end,
@@ -199,7 +202,12 @@ These projects solve similar problems in other editors and informed the design:
 make test
 ```
 
-Requires `plenary.nvim`, `nvim-dap`, and `image.nvim` to be installed (standard lazy.nvim paths).
+Requires `plenary.nvim`, `nvim-dap`, `image.nvim`, and `image-view.nvim` to be installed
+(standard lazy.nvim paths). Point the suite at an image-view checkout elsewhere with:
+
+```bash
+make test IMAGE_VIEW_DIR=~/projects/image-view.nvim
+```
 
 ## Contributing
 

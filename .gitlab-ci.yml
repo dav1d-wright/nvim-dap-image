@@ -16,6 +16,7 @@ test:unit:
     - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
     - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
     - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+    - git clone --depth=1 https://gitlab.com/david_wright/image-view.nvim ~/.local/share/nvim/lazy/image-view.nvim
   script:
     - make test
 
@@ -31,6 +32,7 @@ test:python:
     - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
     - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
     - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+    - git clone --depth=1 https://gitlab.com/david_wright/image-view.nvim ~/.local/share/nvim/lazy/image-view.nvim
   script:
     - make test-python
 
@@ -53,6 +55,7 @@ test:cpp:
     - git clone --depth=1 https://github.com/nvim-lua/plenary.nvim  ~/.local/share/nvim/lazy/plenary.nvim
     - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
     - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
+    - git clone --depth=1 https://gitlab.com/david_wright/image-view.nvim ~/.local/share/nvim/lazy/image-view.nvim
     # Bazelisk as 'bazel'; routes output into the cached dir
     - curl -fsSL https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
         -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel
