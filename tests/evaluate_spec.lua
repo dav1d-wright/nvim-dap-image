@@ -78,6 +78,88 @@ describe("evaluate", function()
     end)
   end)
 
+  describe("repl_evaluate", function()
+    local original
+
+    local function emit_output(body)
+      for _, listener in pairs(require("dap").listeners.after.event_output) do
+        listener(nil, body)
+      end
+    end
+
+    local function with_session(evaluate_fn)
+      original = evaluate.get_session
+      evaluate.get_session = function()
+        return { evaluate = function(_, args, cb) evaluate_fn(args, cb) end }
+      end
+    end
+
+    after_each(function()
+      evaluate.get_session = original
+    end)
+
+    it("takes the value from the response of a bare expression", function()
+      local sent = {}
+      with_session(function(args, cb)
+        table.insert(sent, args.expression)
+        cb(nil, { result = "93824997707328", type = "size_t" })
+      end)
+
+      local result
+      evaluate.repl_evaluate("(size_t)img.data", function(err, value)
+        assert.is_nil(err)
+        result = value
+      end)
+
+      assert.equals("93824997707328", result)
+      assert.same({ "(size_t)img.data" }, sent)
+    end)
+
+    it("falls back to a print command and reads console output", function()
+      local sent = {}
+      with_session(function(args, cb)
+        table.insert(sent, args.expression)
+        if args.expression:match("^p/x ") then
+          emit_output({ category = "console", output = "(size_t) 0x00007ffff7b1e040\n" })
+          cb(nil, { result = "" })
+        else
+          cb({ message = "error: '" .. args.expression .. "' is not a valid command." })
+        end
+      end)
+
+      local err, result
+      evaluate.repl_evaluate("(size_t)img.data", function(e, value)
+        err, result = e, value
+      end, { hex = true })
+
+      vim.wait(1000, function() return err ~= nil or result ~= nil end)
+      assert.is_nil(err)
+      assert.equals("0x00007ffff7b1e040", result)
+      assert.same({ "(size_t)img.data", "p/x (size_t)img.data" }, sent)
+    end)
+
+    it("ignores telemetry output events", function()
+      with_session(function(args, cb)
+        if args.expression:match("^p ") then
+          emit_output({ category = "telemetry", output = "VS/Diagnostics/Debugger/Evaluate" })
+          cb(nil, { result = "" })
+        else
+          cb({ message = "not a valid command" })
+        end
+      end)
+
+      local err, result
+      evaluate.repl_evaluate("img.step[0]", function(e, value)
+        err, result = e, value
+      end)
+
+      vim.wait(1000, function() return err ~= nil or result ~= nil end)
+      assert.is_nil(result)
+      assert.truthy(err)
+      assert.is_nil(err:match("Diagnostics"))
+    end)
+  end)
+
   describe("get_cword", function()
     it("returns a string", function()
       local result = evaluate.get_cword()

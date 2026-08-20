@@ -10,6 +10,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <string>
 
 /// Create a BGR image with colored rectangles.
 cv::Mat create_opencv_image() {
@@ -71,6 +72,13 @@ cv::Mat create_4k_image() {
     return img_4k;
 }
 
+/// Holds a cv::Mat as a member so that nested member access
+/// (`container.image`) and access through a reference can be exercised.
+struct ImageContainer {
+    cv::Mat image;
+    std::string path;
+};
+
 int main() {
     cv::Mat cv_img = create_opencv_image();
     cv::Mat gray = create_grayscale_image();
@@ -78,6 +86,9 @@ int main() {
     cv::Mat large_img = create_large_image();
     cv::Mat img_4k = create_4k_image();
     cv::Mat cropped = create_cropped_image();
+
+    ImageContainer container{create_opencv_image(), "demo.png"};
+    const ImageContainer& container_ref = container;
 
     int not_an_image = 42;
 

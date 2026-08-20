@@ -170,6 +170,15 @@ Extractors are matched to the current buffer's `filetype`, not to the debug adap
 
 When you invoke `:DapImageView`, the plugin reads `vim.bo.filetype` from the current buffer, finds all extractors registered for that filetype, and tries them in priority order.
 
+### Expression evaluation per adapter
+
+Some `cv::Mat` fields cannot be read in the DAP `watch` context: codelldb rejects the array indexing in `step[0]`, and cppdbg can refuse to build a variable object for a data pointer. Those fall back to the adapter's repl, where the two adapters differ:
+
+- **cppdbg** evaluates a bare expression and returns the value in the response body. It answers a print command with a successful response whose `result` holds the debugger's error text.
+- **codelldb** reads repl input as an LLDB command, so the value comes from `p <expr>` and arrives as a console output event.
+
+The plugin sends the bare expression first and only then the print command, which is the order that keeps both adapters working.
+
 ### Image extraction approach
 
 Extraction works differently for Python and C++ because of a fundamental constraint: in C++ you cannot rely on `cv::imwrite` being linked into the debuggee binary. Most executables don't link OpenCV's `imgcodecs` module.
@@ -207,6 +216,21 @@ Requires `plenary.nvim`, `nvim-dap`, `image.nvim`, and `image-view.nvim` to be i
 
 ```bash
 make test IMAGE_VIEW_DIR=~/projects/image-view.nvim
+```
+
+Integration tests run a real debug session against the demo programs in `demo/`:
+
+| Target                | What it covers                                                       |
+| --------------------- | -------------------------------------------------------------------- |
+| `make test-python`    | debugpy, all Python extractors                                       |
+| `make test-cpp`       | codelldb, `cv::Mat` extraction including nested members              |
+
+`demo/cpp/test_cppdbg.lua` runs the same extraction tests against cppdbg. It
+needs `cpptools` installed via Mason, plus `gdb` on Linux:
+
+```bash
+cd demo/cpp && nvim --headless -u ../../tests/minimal_init.lua \
+  --cmd "set rtp+=../../" -S test_cppdbg.lua
 ```
 
 ## Contributing

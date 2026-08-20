@@ -126,27 +126,38 @@ vim.cmd("edit " .. demo_file)
 vim.api.nvim_win_set_cursor(0, { bp_line, 0 })
 dap.toggle_breakpoint()
 
+local image_vars = {
+  "cv_img",
+  "gray",
+  "large_img",
+  "img_4k",
+  "bgra",
+  "cropped",
+  "container.image",
+  "container_ref.image",
+}
+
+local function test_image_vars(index, callback)
+  if index > #image_vars then
+    callback()
+    return
+  end
+  test_extractor(image_vars[index], "OpenCV cv::Mat", function()
+    test_image_vars(index + 1, callback)
+  end)
+end
+
 dap.listeners.after.event_stopped["integration_test"] = function()
   vim.defer_fn(function()
-    test_extractor("cv_img", "OpenCV cv::Mat", function()
-      test_extractor("gray", "OpenCV cv::Mat", function()
-        test_extractor("large_img", "OpenCV cv::Mat", function()
-          test_extractor("img_4k", "OpenCV cv::Mat", function()
-            test_extractor("bgra", "OpenCV cv::Mat", function()
-              test_extractor("cropped", "OpenCV cv::Mat", function()
-                local evaluate = require("nvim-dap-image.evaluate")
-                evaluate.get_filetype = function() return "cpp" end
+    test_image_vars(1, function()
+      local evaluate = require("nvim-dap-image.evaluate")
+      evaluate.get_filetype = function() return "cpp" end
 
-                local extractors = require("nvim-dap-image.extractors")
-                extractors.detect_and_extract("not_an_image", function(err)
-                  record("not_an_image (should fail)", err ~= nil, err or "unexpectedly succeeded")
-                  dap.terminate()
-                  vim.defer_fn(finish, 500)
-                end)
-              end)
-            end)
-          end)
-        end)
+      local extractors = require("nvim-dap-image.extractors")
+      extractors.detect_and_extract("not_an_image", function(err)
+        record("not_an_image (should fail)", err ~= nil, err or "unexpectedly succeeded")
+        dap.terminate()
+        vim.defer_fn(finish, 500)
       end)
     end)
   end, 200)
