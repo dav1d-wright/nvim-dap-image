@@ -1,28 +1,38 @@
 local config = require("nvim-dap-image.config")
+local dapui = require("nvim-dap-image.dapui")
 local evaluate = require("nvim-dap-image.evaluate")
 local extractors = require("nvim-dap-image.extractors")
 local viewer = require("nvim-dap-image.viewer")
 
 local M = {}
 
-function M.view(expr)
-  expr = expr or evaluate.get_cword()
-  if not expr or expr == "" then
-    vim.notify("nvim-dap-image: No expression to evaluate", vim.log.levels.WARN)
+local function notify_error(msg)
+  vim.schedule(function()
+    vim.notify("nvim-dap-image: " .. msg, vim.log.levels.ERROR)
+  end)
+end
+
+--- The expression under the cursor. In an nvim-dap-ui variable tree the word
+--- under the cursor is only the leaf name, so the adapter's evaluate name for
+--- the whole path is resolved instead.
+local function resolve_expression(callback)
+  if dapui.is_variable_tree(vim.bo.filetype) then
+    dapui.resolve(callback)
     return
   end
 
-  local session = evaluate.get_session()
-  if not session then
-    vim.notify("nvim-dap-image: No active debug session", vim.log.levels.WARN)
+  local cword = evaluate.get_cword()
+  if cword == "" then
+    callback("No expression to evaluate")
     return
   end
+  callback(nil, cword)
+end
 
+local function view_expression(expr)
   extractors.detect_and_extract(expr, function(err, tmp_path, extractor_name)
     if err then
-      vim.schedule(function()
-        vim.notify("nvim-dap-image: " .. err, vim.log.levels.ERROR)
-      end)
+      notify_error(err)
       return
     end
 
@@ -31,6 +41,27 @@ function M.view(expr)
         title = expr .. " (" .. extractor_name .. ")",
       })
     end)
+  end)
+end
+
+function M.view(expr)
+  local session = evaluate.get_session()
+  if not session then
+    vim.notify("nvim-dap-image: No active debug session", vim.log.levels.WARN)
+    return
+  end
+
+  if expr and expr ~= "" then
+    view_expression(expr)
+    return
+  end
+
+  resolve_expression(function(err, resolved)
+    if err then
+      notify_error(err)
+      return
+    end
+    view_expression(resolved)
   end)
 end
 

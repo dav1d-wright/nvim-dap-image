@@ -5,7 +5,7 @@ IMAGE_DIR := $(HOME)/.local/share/nvim/lazy/image.nvim
 IMAGE_VIEW_DIR ?= $(HOME)/.local/share/nvim/lazy/image-view.nvim
 export IMAGE_VIEW_DIR
 
-.PHONY: test test-python test-cpp demo-setup-python demo-setup-cpp
+.PHONY: test test-python test-cpp test-cpp-dapui demo-setup-python demo-setup-cpp
 
 test:
 	nvim --headless \
@@ -37,3 +37,10 @@ test-cpp: demo-setup-cpp
 		-u ../../tests/minimal_init.lua \
 		--cmd "set rtp+=../../" \
 		-S test_integration.lua
+
+test-cpp-dapui: demo-setup-cpp
+	cd demo/cpp && nvim --headless \
+		--noplugin \
+		-u ../../tests/minimal_init.lua \
+		--cmd "set rtp+=../../" \
+		-S test_dapui.lua

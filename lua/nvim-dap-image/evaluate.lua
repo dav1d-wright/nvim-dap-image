@@ -6,7 +6,17 @@ function M.get_session()
   return dap.session()
 end
 
+--- The filetype that selects extractors. It comes from the stopped frame's
+--- source file, because the cursor can sit in a window that holds no source at
+--- all, such as a nvim-dap-ui variables window.
 function M.get_filetype()
+  local session = M.get_session()
+  local frame = session and session.current_frame
+  local path = frame and frame.source and frame.source.path
+  if path then
+    local ft = vim.filetype.match({ filename = path })
+    if ft then return ft end
+  end
   return vim.bo.filetype
 end
 

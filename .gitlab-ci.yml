@@ -56,6 +56,8 @@ test:cpp:
     - git clone --depth=1 https://github.com/mfussenegger/nvim-dap  ~/.local/share/nvim/lazy/nvim-dap
     - git clone --depth=1 https://github.com/3rd/image.nvim         ~/.local/share/nvim/lazy/image.nvim
     - git clone --depth=1 https://gitlab.com/david_wright/image-view.nvim ~/.local/share/nvim/lazy/image-view.nvim
+    - git clone --depth=1 https://github.com/rcarriga/nvim-dap-ui       ~/.local/share/nvim/lazy/nvim-dap-ui
+    - git clone --depth=1 https://github.com/nvim-neotest/nvim-nio      ~/.local/share/nvim/lazy/nvim-nio
     # Bazelisk as 'bazel'; routes output into the cached dir
     - curl -fsSL https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
         -o /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel
@@ -68,3 +70,4 @@ test:cpp:
     - chmod +x ~/.local/share/nvim/mason/packages/codelldb/extension/adapter/codelldb
   script:
     - make test-cpp
+    - make test-cpp-dapui

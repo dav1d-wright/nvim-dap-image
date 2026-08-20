@@ -11,6 +11,7 @@ Works with codelldb and cppdbg (C++) and debugpy (Python).
 - [nvim-dap](https://github.com/mfussenegger/nvim-dap) - Debug Adapter Protocol client
 - [image-view.nvim](https://gitlab.com/david_wright/image-view.nvim) - the floating viewer (zoom, pan, close). Pulls in [image.nvim](https://github.com/3rd/image.nvim) for terminal rendering.
 - A terminal that supports image display (Kitty, Ghostty, WezTerm, etc.)
+- Optional: [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) - to view images from its scopes, watches and hover windows
 
 ### Debug Adapter Dependencies
 
@@ -51,18 +52,24 @@ The plugin works by evaluating expressions in the debuggee process to write imag
 ## Usage
 
 1. Start a debug session and hit a breakpoint
-2. Place cursor on an image variable name
+2. Place cursor on an image variable name, in the source or in an [nvim-dap-ui](https://github.com/rcarriga/nvim-dap-ui) scopes, watches or hover window
 3. Run `:DapImageView` (or press `<leader>di` if mapped)
 4. A floating window renders the image
 5. Press `q` or `<Esc>` to close the viewer
 
+In an nvim-dap-ui variables window the cursor sits on a name such as `image`,
+which on its own means nothing to the debugger. The plugin walks the variable
+tree the window renders and asks the adapter for the expression that addresses
+that entry, so a `cv::Mat` nested in a struct (`container.image`) can be viewed
+by putting the cursor on the member.
+
 ### Commands
 
-| Command                | Description                                            |
-| ---------------------- | ------------------------------------------------------ |
-| `:DapImageView [expr]` | View variable as image. Defaults to word under cursor. |
-| `:DapImageClose`       | Close the currently focused image viewer               |
-| `:DapImageCloseAll`    | Close all open image viewers                           |
+| Command                | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| `:DapImageView [expr]` | View variable as image. Defaults to the variable under the cursor. |
+| `:DapImageClose`       | Close the currently focused image viewer                           |
+| `:DapImageCloseAll`    | Close all open image viewers                                       |
 
 ### Suggested keybinding
 
@@ -166,9 +173,9 @@ require("nvim-dap-image").register_extractor({
 
 ### Filetype-based extractor dispatch
 
-Extractors are matched to the current buffer's `filetype`, not to the debug adapter type. This means a single adapter like codelldb (which supports C++, Rust, and Zig) automatically uses the correct extractors based on what file you're debugging, with no configuration mapping needed.
+Extractors are matched to a `filetype`, not to the debug adapter type. This means a single adapter like codelldb (which supports C++, Rust, and Zig) automatically uses the correct extractors based on what file you're debugging, with no configuration mapping needed.
 
-When you invoke `:DapImageView`, the plugin reads `vim.bo.filetype` from the current buffer, finds all extractors registered for that filetype, and tries them in priority order.
+The filetype comes from the source file of the stopped stack frame, so the dispatch also works from windows that hold no source, such as the nvim-dap-ui variables windows. Without a stopped frame the plugin falls back to `vim.bo.filetype`. It then finds all extractors registered for that filetype and tries them in priority order.
 
 ### Expression evaluation per adapter
 
@@ -224,6 +231,7 @@ Integration tests run a real debug session against the demo programs in `demo/`:
 | --------------------- | -------------------------------------------------------------------- |
 | `make test-python`    | debugpy, all Python extractors                                       |
 | `make test-cpp`       | codelldb, `cv::Mat` extraction including nested members              |
+| `make test-cpp-dapui` | codelldb, resolving the variable under the cursor in nvim-dap-ui      |
 
 `demo/cpp/test_cppdbg.lua` runs the same extraction tests against cppdbg. It
 needs `cpptools` installed via Mason, plus `gdb` on Linux:
